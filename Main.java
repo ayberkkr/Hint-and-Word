@@ -10,22 +10,26 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Locale;
 import javax.sound.sampled.*;
 
 /**
  * =============================================================================
  * BURSA TEKNİK ÜNİVERSİTESİ - YAPAY ZEKA VE MAKİNE ÖĞRENMESİ BÖLÜMÜ
- * DÖNEM SONU GRAFİK ARAYÜZÜ PROJESİ: CODENAMES - PARADOX MATRIX SÜRÜMÜ
- * * Geliştirici Ekip: Ayberk Kar & Proje Grubu
- * Teslim Tarihi: Son 4 Gün Sınırı
+ * DÖNEM SONU GRAFİK ARAYÜZÜ PROJESİ: PARADOX
+ * =============================================================================
+ * * Proje Danışmanı: Dr. Öğr. Üyesi Mustafa KOCAKULAK
+ * * Geliştirici Ekip: Ayberk Kar & Elif Sude Kapan
+ * Teslim Tarihi: Son Gün Teslim Yönetimi (Sıfır Hata Entegrasyonu)
  * =============================================================================
  * * Proje Özellikleri:
  * 1. 16:10 Premium Sinematik Dikdörtgen Kart Yapısı (4:3 Basıklık Giderildi)
  * 2. 60 FPS Thread-Based Akıcı Kart Dönme Animasyonu
- * 3. HTML Destekli Siber Turnuva Akış ve Operasyon Günlüğü (Log)
+ * 3. HTML Destekli Siber Akış ve Operasyon Günlüğü (Log)
  * 4. Dahili Sentezleyici ile Tamamen Bağımsız Ses Efektleri Motoru (Audio System)
  * 5. Gerçek Zamanlı 3 Dakikalık Geri Sayım Sayaç Motoru (Dinamik Timer)
- * 6. Kelime Köklerini ve Kopyaları Engelleyen Yapay Zeka Casus Asistanı (AI Validator)
+ * 6. Kelime Köklerini, Eklerini ve Türkçe Karakter Hilelerini Engelleyen AI Validator
+ * 7. Tura Göre Oyuncu İsimlerini Dinamik Neon Renklendiren UI Motoru
  * =============================================================================
  */
 public class Main {
@@ -133,7 +137,7 @@ public class Main {
         openPlayerNameDialog();
 
         // Ana Pencere (JFrame) Mimarisi İnşası
-        frame = new JFrame("CODENAMES: PARADOX TURNUVA SÜRÜMÜ v4.0");
+        frame = new JFrame("PARADOX");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1450, 820); 
         frame.setLayout(new BorderLayout(15, 15));
@@ -162,10 +166,10 @@ public class Main {
         tGbc.anchor = GridBagConstraints.WEST;
         topPanel.add(leftBtnPanel, tGbc);
 
-        // Dinamik Tur Gösterge Alanı
-        turnLabel = new JLabel("SIRA: " + maviCasusIsim.toUpperCase() + " (İPUCU BEKLENİYOR)");
+        // Dinamik Tur Gösterge Alanı (Dinamik HTML Desteği ve Renk Parlaması kanka)
+        turnLabel = new JLabel("<html>SIRA: <span style='color: rgb(0, 180, 216);'>" + maviCasusIsim.toUpperCase() + "</span> (İPUCU BEKLENİYOR)</html>");
         turnLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        turnLabel.setForeground(NEON_BLUE);
+        turnLabel.setForeground(Color.WHITE);
         tGbc.gridx = 1; 
         tGbc.gridy = 0; 
         tGbc.anchor = GridBagConstraints.CENTER;
@@ -376,7 +380,7 @@ public class Main {
                 return;
             }
             
-            // 🧠 YAPAY ZEKA DOĞRULAYICI SİSTEMİ (AI Hint Validator Kontrolü)
+            // Yapay Zeka Gelişmiş Validasyon Çekirdeği kanka
             String validationError = validateHintWithMatrixWords(clue);
             if (validationError != null) {
                 playSynthSound(100, 400); 
@@ -399,13 +403,11 @@ public class Main {
 
             if (currentState == GameState.MAVI_CASUS) {
                 currentState = GameState.MAVI_AJAN;
-                turnLabel.setText("SIRA: " + maviAjanIsim.toUpperCase() + " (KART SEÇİLİYOR)");
-                turnLabel.setForeground(NEON_BLUE);
             } else if (currentState == GameState.KIRMIZI_CASUS) {
                 currentState = GameState.KIRMIZI_AJAN;
-                turnLabel.setText("SIRA: " + kirmiziAjanIsim.toUpperCase() + " (KART SEÇİLİYOR)");
-                turnLabel.setForeground(NEON_RED);
             }
+            
+            updateTurnUIStyle(); 
             
             clueField.setEnabled(false);
             submitClueBtn.setEnabled(false);
@@ -419,33 +421,67 @@ public class Main {
     }
 
     /**
-     * Gelişmiş Algoritmik İpucu Doğrulayıcı Metodu (AI Hint Validator)
-     * String manipülasyon metotları ile tahtadaki kelimelerin bütünlüğünü korur.
+     * Gelişmiş Koşullu Yapay Zeka İpucu Doğrulayıcı Metodu (AI Hint Validator v4.2)
+     * Türkçe ekleri (-ler, -lar, -ın, -den) temizler, harf tolerans analizi yapar. kanka
      */
     private static String validateHintWithMatrixWords(String clue) {
-        String lowerClue = clue.toLowerCase(java.util.Locale.forLanguageTag("tr"));
+        Locale trLocale = Locale.forLanguageTag("tr-TR");
+        String lowerClue = clue.toLowerCase(trLocale).trim();
+        
+        String[] ekler = {"ler", "lar", "ın", "in", "un", "ün", "ım", "im", "um", "üm", "ı", "i", "u", "ü", "dan", "den", "tan", "ten", "a", "e"};
+        
+        String cleanClue = lowerClue;
+        for (String ek : ekler) {
+            if (lowerClue.endsWith(ek) && lowerClue.length() - ek.length() >= 3) {
+                cleanClue = lowerClue.substring(0, lowerClue.length() - ek.length());
+                break;
+            }
+        }
         
         for (Card card : activeCards) {
             if (!card.isRevealed()) {
-                String cardTextLower = card.getText().toLowerCase(java.util.Locale.forLanguageTag("tr"));
+                String cardTextLower = card.getText().toLowerCase(trLocale).trim();
                 
-                // 1. Durum: Kelimenin birebir aynısının kopyalanması engellenir
-                if (lowerClue.equals(cardTextLower)) {
-                    return "Kural İhlali: İpucu kelimesi, tahtadaki gizli bir kelimenin aynısı olamaz!";
+                String cleanCardText = cardTextLower;
+                for (String ek : ekler) {
+                    if (cardTextLower.endsWith(ek) && cardTextLower.length() - ek.length() >= 3) {
+                        cleanCardText = cardTextLower.substring(0, cardTextLower.length() - ek.length());
+                        break;
+                    }
                 }
                 
-                // 2. Durum: Kelime köklerinin iç içe geçmesi engellenir
-                if (cardTextLower.contains(lowerClue) || lowerClue.contains(cardTextLower)) {
-                    return "Kural İhlali: İpucu, tahtadaki '" + card.getText() + "' kelimesiyle doğrudan kök bağlamı içeriyor!";
+                if (lowerClue.equals(cardTextLower) || cleanClue.equals(cleanCardText)) {
+                    return "Kural İhlali: İpucu kelimesi, tahtadaki gizli bir kelimenin aynısı veya doğrudan eşleniği olamaz!";
+                }
+                
+                if (cardTextLower.contains(lowerClue) || lowerClue.contains(cardTextLower) ||
+                    cleanCardText.contains(cleanClue) || cleanClue.contains(cleanCardText)) {
+                    return "Kural İhlali: İpucu, tahtadaki '" + card.getText() + "' kelimesiyle yasadışı bir kök/ek bağı içeriyor!";
                 }
             }
         }
         return null; 
     }
 
-    // =============================================================================
-    // MODAL PENCERELER VE PROFIL EKLEME PANELİ
-    // =============================================================================
+    private static void updateTurnUIStyle() {
+        if (currentState == GameState.MAVI_CASUS) {
+            turnLabel.setText("<html>SIRA: <span style='color: rgb(0, 180, 216);'>" + maviCasusIsim.toUpperCase() + "</span> (İPUCU DÜŞÜNÜLÜYOR)</html>");
+            topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 4, 0, NEON_BLUE));
+            submitClueBtn.setBackground(NEON_BLUE);
+        } else if (currentState == GameState.MAVI_AJAN) {
+            turnLabel.setText("<html>SIRA: <span style='color: rgb(0, 180, 216);'>" + maviAjanIsim.toUpperCase() + "</span> (KART SEÇİLİYOR)</html>");
+            topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 4, 0, NEON_BLUE));
+        } else if (currentState == GameState.KIRMIZI_CASUS) {
+            turnLabel.setText("<html>SIRA: <span style='color: rgb(239, 35, 60);'>" + kirmiziCasusIsim.toUpperCase() + "</span> (İPUCU DÜŞÜNÜLÜYOR)</html>");
+            topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 4, 0, NEON_RED));
+            submitClueBtn.setBackground(NEON_RED);
+        } else if (currentState == GameState.KIRMIZI_AJAN) {
+            turnLabel.setText("<html>SIRA: <span style='color: rgb(239, 35, 60);'>" + kirmiziAjanIsim.toUpperCase() + "</span> (KART SEÇİLİYOR)</html>");
+            topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 4, 0, NEON_RED));
+        }
+        frame.repaint();
+    }
+
     private static void openPlayerNameDialog() {
         JDialog dialog = new JDialog((Frame)null, "Oyuncu Profilleri", true);
         dialog.setUndecorated(true); 
@@ -483,9 +519,6 @@ public class Main {
         dialog.setVisible(true);
     }
 
-    // =============================================================================
-    // KRONOMETRE VE SAYAÇ THREAD SİSTEMLERİ
-    // =============================================================================
     private static void setupRealTimeTimer() {
         gameTimer = new javax.swing.Timer(1000, e -> {
             remainingSeconds--;
@@ -515,9 +548,6 @@ public class Main {
         timerLabel.setText("03:00");
     }
 
-    // =============================================================================
-    // AUDIO ENGINE - SAF FREKANS SENTEZLEYİCİSİ (KLASÖRDEN BAĞIMSIZ SES)
-    // =============================================================================
     private static void playSynthSound(int hz, int msecs) {
         try {
             byte[] buf = new byte[msecs * 8];
@@ -533,13 +563,14 @@ public class Main {
             sdl.drain(); 
             sdl.close();
         } catch (Exception ex) { 
-            System.out.println("Sistem ses kanalları meşgul veya sürücü bulunamadı."); 
+            System.out.println("Ses aygıtı meşgul."); 
         }
     }
 
-    // =============================================================================
-    // RESTART VE MATRIX SIFIRLAMA MOTORU
-    // =============================================================================
+    private static boolean isCasusPhase() {
+        return currentState == GameState.MAVI_CASUS || currentState == GameState.KIRMIZI_CASUS;
+    }
+
     private static void resetWholeGameMatrix() {
         activeCards.clear();
         prepareAdvancedMatrixData(); 
@@ -555,10 +586,7 @@ public class Main {
         activeClueLabel.setText("AKTİF İPUCU: BEKLENİYOR...");
         
         currentState = GameState.MAVI_CASUS;
-        turnLabel.setText("SIRA: " + maviCasusIsim.toUpperCase() + " (CASUS BAŞI)");
-        turnLabel.setForeground(NEON_BLUE);
-        topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 4, 0, NEON_BLUE));
-        submitClueBtn.setBackground(NEON_BLUE);
+        updateTurnUIStyle(); 
 
         clueField.setEnabled(true);
         submitClueBtn.setEnabled(true);
@@ -568,12 +596,9 @@ public class Main {
         resetTurnTimer();
         buildMatrixBoardUI(); 
         
-        appendColoredLog("🔄 <b>MATRİX SIFIRLANDI!</b> Tüm kelimeler yenilendi, turnuva baştan başladı.", "#2ec4b6");
+        appendColoredLog("🔄 <b>OYUN SIFIRLANDI!</b> Tüm kelimeler yenilendi, turnuva baştan başladı.", "#2ec4b6");
     }
 
-    // =============================================================================
-    // GRİD MATRIX KART BUTONLARI YERLEŞİM MANTIKLARI
-    // =============================================================================
     private static void buildMatrixBoardUI() {
         boardPanel.removeAll();
         boardButtons.clear();
@@ -583,7 +608,6 @@ public class Main {
             btn.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    // HATA VEREN METHOD YERİNE DOĞRUDAN DURUM KONTROLÜ SAĞLANDI kanka
                     if (card.isRevealed() || (currentState == GameState.MAVI_CASUS || currentState == GameState.KIRMIZI_CASUS)) return;
 
                     TurnControl tc = new TurnControl();
@@ -643,7 +667,6 @@ public class Main {
                     appendColoredLog("🃏 <b>" + aktifAjanIsim + "</b> kart açtı: <b>" + card.getText() + "</b> → <span style='color:" + logColor + ";'>" + logRole + "</span>", "#aebbc7");
                     btn.startFlipAnimation(targetImagePath, "");
 
-                    // Galibiyet Durum Analizleri
                     if (blueLeft <= 0) {
                         playSynthSound(1000, 600);
                         showInGameMessage("TEBRİKLER! MAVİ TAKIM MAÇI KAZANDI!", NEON_BLUE);
@@ -692,18 +715,11 @@ public class Main {
 
         if (currentState == GameState.MAVI_AJAN || currentState == GameState.MAVI_CASUS) {
             currentState = GameState.KIRMIZI_CASUS;
-            turnLabel.setText("SIRA: " + kirmiziCasusIsim.toUpperCase() + " (KARTLARI ŞİFRELE)");
-            turnLabel.setForeground(NEON_RED);
-            topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 4, 0, NEON_RED));
-            submitClueBtn.setBackground(NEON_RED);
         } else {
             currentState = GameState.MAVI_CASUS;
-            turnLabel.setText("SIRA: " + maviCasusIsim.toUpperCase() + " (KARTLARI ŞİFRELE)");
-            turnLabel.setForeground(NEON_BLUE);
-            topPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 4, 0, NEON_BLUE));
-            submitClueBtn.setBackground(NEON_BLUE);
         }
-        frame.repaint();
+        
+        updateTurnUIStyle(); 
     }
 
     private static void appendColoredLog(String htmlText, String hexColor) {
@@ -721,13 +737,10 @@ public class Main {
         }
     }
 
-    // ==========================================
-    // GELİŞMİŞ HTML DESTEKLİ GÖRKEMLİ REHBER POPUPU
-    // ==========================================
     private static void openHelpGuideDialog() {
         JDialog helpDialog = new JDialog(frame, "Codenames Kılavuzu", true);
         helpDialog.setUndecorated(true);
-        helpDialog.setSize(520, 420); 
+        helpDialog.setSize(600, 520); 
         helpDialog.setLocationRelativeTo(frame); 
         helpDialog.setLayout(new BorderLayout());
         
@@ -739,29 +752,34 @@ public class Main {
         guidePane.setEditable(false);
         guidePane.setContentType("text/html");
         guidePane.setBackground(new Color(16, 16, 24));
-        guidePane.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        guidePane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        String htmlRules = "<html><body style='font-family:Segoe UI,sans-serif; color:#e2e8f0; margin:0; padding:0;'>"
-                + "<h2 style='color:#ffc107; text-align:center; margin-top:0;'>⚔️ TOURNAMENT OPERASYON REHBERİ</h2>"
-                + "<hr style='border:0; border-top:1px solid #3c4150; margin-bottom:12px;'>"
-                + "<b>1. MATRİX DAĞILIMI:</b><br>"
-                + "Tahtada toplam 12 siber kart bulunur: <span style='color:#00b4d8;'>4 Mavi</span>, "
-                + "<span style='color:#ef233c;'>4 Kırmızı</span>, 3 Sivil ve <span style='color:#ff0055;'>1 Siyah Katil</span> kart.<br><br>"
-                + "<b>2. YAPAY ZEKA DOĞRULAYICI (AI Validator):</b><br>"
-                + "Casus Başı ipucu girerken, kuantum doğrulayıcı çalışır. Tahtadaki kapalı kelimelerle "
-                + "birebir aynı olan veya kelime kökünü ihlal eden kopyalar <u>otomatik engellenir</u>.<br><br>"
-                + "<b>3. SÜRE VE HAK SINIRI:</b><br>"
-                + "Her tur için işlem süresi tam <b>3 dakikadır</b>. Saha Ajanı, Casus Başının belirttiği sayı "
-                + "kadar seçim hakkına sahiptir. Yanlış kart açılırsa sıra anında karşı takıma devredilir.<br><br>"
-                + "<b>4. STRATEJİK PAS EYLEMİ:</b><br>"
-                + "Saha Ajanları, katil karta basma riski hissettikleri an alt paneldeki <i>'SIRA DEVRET (PAS)'</i> "
-                + "butonunu kullanarak operasyon sırasını güvenle karşı tarafa bırakabilirler."
+        String htmlRules = "<html><body style='font-family:Segoe UI,sans-serif; color:#e2e8f0; margin:0; padding:0; line-height:1.5;'>"
+                + "<h2 style='color:#ffc107; text-align:center; margin-top:0; letter-spacing:1px;'>⚔️ PARADOX OPERASYON REHBERİ</h2>"
+                + "<hr style='border:0; border-top:1px solid #3c4150; margin-bottom:15px;'>"
+                + "<b>1. MATRİX VE TAKIM DAĞILIMI:</b><br>"
+                + "Tahtada 12 gizli siber kart bulunur: <span style='color:#00b4d8;'>4 Mavi</span>, "
+                + "<span style='color:#ef233c;'>4 Kırmızı</span>, 3 Sivil ve <span style='color:#ff0055;'>1 Siyah Katil</span>. Mavi takım oyuna ilk ipucunu vererek başlar.<br><br>"
+                + "<b>2. YAPAY ZEKA DOĞRULAYICI (AI Hint Validator v4.2):</b><br>"
+                + "Casus başları ipucu kelimesi girerken kuantum çekirdek devrededir. Tahtadaki kapalı kelimelerin "
+                + "birebir aynısı, büyük/küçük harf varyasyonları, Türkçe ek almış halleri (<i>-ler, -lar, -ın, -den vb.</i>) "
+                + "veya kelime kökünü doğrudan ifşa eden tüm illegal kopyalar <u>sistem tarafından bloke edilir</u>.<br><br>"
+                + "<b>3. DİNAMİK NEON UI SİSTEMİ:</b><br>"
+                + "Arayüz tamamen tura bağımlıdır. Sıra hangi oyuncuya geçerse (Casus Başı Neon Mavi / Kırmızı) parlama yapar.<br><br>"
+                + "<b>4. KATI GERÇEK ZAMANLI SÜRE VİTESİ:</b><br>"
+                + "Gerek ipucu kodlanırken, gerek ajan sahada kart seçerken oyuncuların tam <b>3 dakika (180 saniye)</b> süresi vardır. "
+                + "Son 10 saniye sayaç kırmızıya döner ve sesli ikaz verir. Süre bitimi doğrudan <u>sıra kaybı ve devir</u> demektir.<br><br>"
+                + "<b>5. STRATEJİK PAS VE SEÇİM SINIRI:</b><br>"
+                + "Ajan, casus başının girdiği sayı kadar kartı çevirmek zorundadır. Ancak siyah katil kart riskini sezdikleri an alt paneldeki "
+                + "<i>'SIRA DEVRET (PAS)'</i> butonuna basarak riski sıfırlayabilirer.<br><br>"
+                + "<b>6. SİYAH KATİL KART CEZASI:</b><br>"
+                + "Siyah kartı çeviren ajan, kendi takımının operasyonunu sabote etmiş sayılır/ ve maçı <u>anında karşı takım kazanır</u>."
                 + "</body></html>";
                 
         guidePane.setText(htmlRules);
         
-        JButton close = new createModernButton("ANLAŞILDI, SAHAYA DÖN", GOLD_COLOR); 
-        close.setPreferredSize(new Dimension(0, 40));
+        JButton close = new createModernButton("ANLAŞILDI, OPERASYON SAHASINA DÖN", GOLD_COLOR); 
+        close.setPreferredSize(new Dimension(0, 42));
         close.addActionListener(ev -> helpDialog.dispose());
         
         p.add(new JScrollPane(guidePane), BorderLayout.CENTER); 
@@ -776,36 +794,19 @@ public class Main {
         dialog.setSize(440, 110); 
         dialog.setLocationRelativeTo(frame);
         
-        JPanel panel = new JPanel(new BorderLayout()); 
-        panel.setBackground(PANEL_BG); 
-        panel.setBorder(BorderFactory.createLineBorder(glowColor, 2));
-        
-        JLabel textLabel = new JLabel(msg, SwingConstants.CENTER); 
-        textLabel.setFont(new Font("Segoe UI", Font.BOLD, 13)); 
-        textLabel.setForeground(Color.WHITE);
-        
-        JButton closeBtn = new createModernButton("DEVAM ET", glowColor); 
-        closeBtn.addActionListener(e -> dialog.dispose());
-        
-        JPanel btnWrap = new JPanel(new FlowLayout(FlowLayout.CENTER)); 
-        btnWrap.setOpaque(false); 
-        btnWrap.add(closeBtn);
-        
-        panel.add(textLabel, BorderLayout.CENTER); 
-        panel.add(btnWrap, BorderLayout.SOUTH);
-        dialog.add(panel); 
-        dialog.setVisible(true);
+        JPanel panel = new JPanel(new BorderLayout()); panel.setBackground(PANEL_BG); panel.setBorder(BorderFactory.createLineBorder(glowColor, 2));
+        JLabel textLabel = new JLabel(msg, SwingConstants.CENTER); textLabel.setFont(new Font("Segoe UI", Font.BOLD, 13)); textLabel.setForeground(Color.WHITE);
+        JButton closeBtn = new createModernButton("DEVAM ET", glowColor); closeBtn.addActionListener(e -> dialog.dispose());
+        JPanel btnWrap = new JPanel(new FlowLayout(FlowLayout.CENTER)); btnWrap.setOpaque(false); btnWrap.add(closeBtn);
+        panel.add(textLabel, BorderLayout.CENTER); panel.add(btnWrap, BorderLayout.SOUTH);
+        dialog.add(panel); dialog.setVisible(true);
     }
 
-    // =============================================================================
-    // CUSTOM GRAFİK KOMPONENTLERİ VE KONTÜRLÜ METİN ÇİZİMLERİ (60 FPS MOTORU)
-    // =============================================================================
     static class GameCardButton extends JComponent {
         private Image currentImg; String cardText; Color borderColor = null; boolean isRevealed = false; Card cardData; double scaleX = 1.0; boolean isHovered = false;
         public GameCardButton(String imgPath, String text, Card card) {
             this.currentImg = new ImageIcon(imgPath).getImage(); this.cardText = text; this.cardData = card; setPreferredSize(new Dimension(CARD_WIDTH, CARD_HEIGHT));
             addMouseListener(new MouseAdapter() {
-                // HATA VEREN METHOD YERİNE DOĞRUDAN DURUM KONTROLÜ ENJEKTE EDİLDİ kanka
                 @Override public void mouseEntered(MouseEvent e) { if(!isRevealed && !(currentState == GameState.MAVI_CASUS || currentState == GameState.KIRMIZI_CASUS)) { isHovered = true; repaint(); } }
                 @Override public void mouseExited(MouseEvent e) { isHovered = false; repaint(); }
             });
@@ -826,7 +827,6 @@ public class Main {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             int animatedWidth = (int) (getWidth() * scaleX); int xOffset = (getWidth() - animatedWidth) / 2;
             
-            // HATA VEREN METHOD YERİNE DOĞRUDAN DURUM KONTROLÜ ENJEKTE EDİLDİ kanka
             if (!isRevealed && (currentState == GameState.MAVI_CASUS || currentState == GameState.KIRMIZI_CASUS)) {
                 String spyImgPath = "assets/kapali_kart.png";
                 switch (cardData.getType()) {
@@ -843,10 +843,6 @@ public class Main {
             if (borderColor != null) { g2.setColor(borderColor); g2.setStroke(new BasicStroke(4)); g2.drawRect(xOffset + 2, 2, animatedWidth - 4, getHeight() - 4); }
         }
         
-        /**
-         * 🎯 KONTÜRLÜ OKUNAKLI FONT MOTORU METODU
-         * İçi jilet beyazı parlayan, dışı ise 8 yönlü siyah maskeyle çevrilen yazı çizimi.
-         */
         private void drawCardText(Graphics2D g2, int xOffset, int animatedWidth) {
             if (!cardText.isEmpty() && scaleX > 0.3) {
                 g2.setFont(new Font("Segoe UI", Font.BOLD, 16)); 
@@ -855,7 +851,6 @@ public class Main {
                 int tx = xOffset + (animatedWidth - fm.stringWidth(cardText)) / 2; 
                 int ty = ((getHeight() - fm.getHeight()) / 2) + fm.getAscent();
                 
-                // 1. Kademe Çizim: Siyah Dış Hat Gölgelendirmesi (Outline Kontürü kanka)
                 g2.setColor(new Color(15, 15, 15)); 
                 g2.drawString(cardText, tx - 1, ty - 1);
                 g2.drawString(cardText, tx + 1, ty - 1);
@@ -866,7 +861,6 @@ public class Main {
                 g2.drawString(cardText, tx, ty - 2);
                 g2.drawString(cardText, tx, ty + 2);
                 
-                // 2. Kademe Çizim: Merkez Beyaz İç Dolgu
                 g2.setColor(new Color(255, 255, 255)); 
                 g2.drawString(cardText, tx, ty);
             }
@@ -876,32 +870,19 @@ public class Main {
     static class createModernButton extends JButton {
         private Color baseColor;
         public createModernButton(String text, Color baseColor) {
-            super(text); 
-            this.baseColor = baseColor; 
-            setFont(new Font("Segoe UI", Font.BOLD, 13)); 
-            setForeground(Color.WHITE); 
-            setBackground(baseColor); 
-            setContentAreaFilled(false); 
-            setFocusPainted(false); 
-            setBorder(BorderFactory.createEmptyBorder(6, 15, 6, 15));
+            super(text); this.baseColor = baseColor; setFont(new Font("Segoe UI", Font.BOLD, 13)); setForeground(Color.WHITE); setBackground(baseColor); setContentAreaFilled(false); setFocusPainted(false); setBorder(BorderFactory.createEmptyBorder(6, 15, 6, 15));
             addMouseListener(new MouseAdapter() {
                 @Override public void mouseEntered(MouseEvent e) { setBackground(baseColor.brighter()); }
                 @Override public void mouseExited(MouseEvent e) { setBackground(baseColor); }
             });
         }
         @Override protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create(); 
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            Graphics2D g2 = (Graphics2D) g.create(); g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             if (!isEnabled()) g2.setColor(Color.DARK_GRAY); else g2.setColor(getBackground());
-            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8); 
-            g2.dispose(); 
-            super.paintComponent(g);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8); g2.dispose(); super.paintComponent(g);
         }
     }
 
-    // ==========================================
-    // DATA INJECTION MODULE (GENİŞ VERİ ENJEKSİYONU)
-    // ==========================================
     private static void prepareAdvancedMatrixData() {
         ArrayList<String> pool = new ArrayList<>(Arrays.asList(
             "İtalya", "Japonya", "Şemsiye", "Sandalye", "Gramofon", "Ayna",
