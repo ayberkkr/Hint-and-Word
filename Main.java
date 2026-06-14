@@ -416,7 +416,7 @@ public class Main {
             showInGameMessage("İpucu onaylandı! Sıra Saha Ajanında. Süre: 3 Dakika.", GOLD_COLOR);
         });
 
-        appendColoredLog(" Kuantum ağı kararlı hale getirildi. Sistem Hazır.", "#2ec4b6");
+        appendColoredLog("Ağ kararlı hale getirildi. Sistem Hazır.", "#2ec4b6");
         frame.setVisible(true);
     }
 
@@ -654,10 +654,10 @@ public class Main {
                             playSynthSound(80, 800); 
                             
                             String winnerIsim = (currentState == GameState.MAVI_AJAN) ? kirmiziAjanIsim : maviAjanIsim;
-                            appendColoredLog("🚨 <b>" + aktifAjanIsim + "</b> SİYAH KATIL KARTI çevirdi!", "#ff0055");
+                            appendColoredLog("🚨 <b>" + aktifAjanIsim + "</b> SİYAH KARTI çevirdi!", "#ff0055");
                             
                             Timer t = new Timer(800, ev -> {
-                                showInGameMessage(aktifAjanIsim.toUpperCase() + " SİYAH KATİL KARTINI ÇEVİRDİ! KAZANAN: " + winnerIsim.toUpperCase(), NEON_RED);
+                                showInGameMessage(aktifAjanIsim.toUpperCase() + " SİYAH KARTI ÇEVİRDİ! KAZANAN: " + winnerIsim.toUpperCase(), NEON_RED);
                                 resetWholeGameMatrix(); 
                             });
                             t.setRepeats(false); t.start();
